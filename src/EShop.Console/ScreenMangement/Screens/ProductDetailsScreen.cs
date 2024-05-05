@@ -1,4 +1,5 @@
 ﻿using EShop.Core;
+using EShop.Core.OrderAggregate;
 using EShop.Core.ProductAggregate;
 using EShop.Infrastructure;
 using Microsoft.EntityFrameworkCore;
