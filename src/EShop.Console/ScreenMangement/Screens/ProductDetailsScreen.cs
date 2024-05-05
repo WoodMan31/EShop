@@ -29,16 +29,6 @@ public sealed class ProductDetailsScreen : IScreen
     {
         var product = await _context.Products.SingleAsync(product => product.Id == ProductId);
 
-        _console.MarkupLine(@$"[bold]Товар ""{product.Name.EscapeMarkup()}""[/]");
-        _console.Write(CreateProductRender(product));
-        _console.WriteLine();
-
-        if (ShowProductWasAddedToCartMessage)
-        {
-            _console.MarkupLine("[green]Товар успешно добавлен в корзину![/]");
-            _console.WriteLine();
-        }
-
         var user = await _context.Users
             .Include(user => user.ShoppingCart.Items)
                 .ThenInclude(item => item.Product)
@@ -48,12 +38,20 @@ public sealed class ProductDetailsScreen : IScreen
         var shoppingCartItem = shoppingCart.Items.SingleOrDefault(item => item.Product.Id == product.Id);
         var availableQuantity = product.AvailableQuantity - (shoppingCartItem?.Quantity ?? 0);
 
+        _console.MarkupLine(@$"[bold]Товар ""{product.Name.EscapeMarkup()}""[/]");
+        _console.Write(CreateProductRender(product, shoppingCartItem?.Quantity ?? 0));
+        _console.WriteLine();
+
+        if (ShowProductWasAddedToCartMessage)
+        {
+            _console.MarkupLine("[green]Товар успешно добавлен в корзину![/]");
+            _console.WriteLine();
+        }
+
         var shouldBeAddedToCart = _console.Prompt(
             new SelectionPrompt<bool>()
                 .UseConverter(value => value
-                    ? (shoppingCartItem?.Quantity ?? 0) > 0
-                        ? $"Добавить в корзину (в корзине: {shoppingCartItem!.Quantity})"
-                        : "Добавить в корзину"
+                    ? "Добавить в корзину"
                     : "[gray]Назад[/]")
                 .AddChoices(availableQuantity > 0 ? [false, true] : [false]));
 
@@ -89,7 +87,7 @@ public sealed class ProductDetailsScreen : IScreen
         return ScreenEndAction.ReloadScreen();
     }
 
-    private static IRenderable CreateProductRender(IProduct product)
+    private static IRenderable CreateProductRender(IProduct product, int inShoppingCartQuantity)
     {
         var labelStyle = new Style(decoration: Decoration.Bold);
 
@@ -99,7 +97,9 @@ public sealed class ProductDetailsScreen : IScreen
             .Collapse()
             .AddColumns(string.Empty, string.Empty)
             .AddRow(new Text("Цена:", labelStyle), new Text($"${product.Price}"))
-            .AddRow(new Text("В наличии:", labelStyle), new Text($"{product.AvailableQuantity} шт."))
+            .AddRow(
+                new Text("В наличии:", labelStyle),
+                new Text($"{product.AvailableQuantity} шт.{(inShoppingCartQuantity > 0 ? $" (из них {inShoppingCartQuantity} шт. в корзине)" : string.Empty)}"))
             .AddEmptyRow();
 
         table = product switch
