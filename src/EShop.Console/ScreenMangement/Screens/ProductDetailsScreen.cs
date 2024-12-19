@@ -53,7 +53,7 @@ public sealed class ProductDetailsScreen : IScreen
                 .UseConverter(value => value
                     ? "Добавить в корзину"
                     : "[gray]Назад[/]")
-                .AddChoices(availableQuantity > 0 ? [false, true] : [false]));
+                .AddChoices(availableQuantity > 0 ? new[] { false, true } : new[] { false }));
 
         if (!shouldBeAddedToCart)
         {

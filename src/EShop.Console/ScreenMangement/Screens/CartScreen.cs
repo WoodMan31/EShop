@@ -42,7 +42,7 @@ public sealed class CartScreen : IScreen
         var wantMakeOrder = _console.Prompt(
             new SelectionPrompt<bool>()
                 .UseConverter(value => value ? "Оформить заказ" : "[gray]Назад[/]")
-                .AddChoices(user.ShoppingCart.Items.Any() ? [false, true] : [false]));
+                .AddChoices(user.ShoppingCart.Items.Any()? new[] { false, true } : new[] { false }));
 
         if (!wantMakeOrder)
         {
@@ -59,7 +59,7 @@ public sealed class CartScreen : IScreen
 
                     _ => throw new NotImplementedException()
                 })
-                .AddChoices([PaymentMethod.Cash()])
+                .AddChoices(new[]{PaymentMethod.Cash()})
                 .AddChoices(user.CardNumbers.Select(PaymentMethod.CreditCard)));
 
         var order = new Order(DateTime.UtcNow, paymentInfo);
